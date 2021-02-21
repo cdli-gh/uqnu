@@ -31,7 +31,7 @@ With yarn:
 
 ## React package documentation
 
-See [reactJS readme](README_REACT.md).
+See [React App readme](README_REACT.md).
 
 ### About
 By Ilya Khait. Published under the [MIT Licence](https://opensource.org/licenses/MIT).
