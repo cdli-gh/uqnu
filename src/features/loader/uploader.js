@@ -132,7 +132,13 @@ class _ATFUploader extends React.Component {
         this.setState({ATF_file_maps: ATF_file_maps})
         localforage.setItem(
             'ATF_file_maps', 
-            ATF_file_maps.map( m => { delete m.actions; return m })
+            [...ATF_file_maps].map( m => {
+                return { 
+                    file: m.file, 
+                    fileTextsMap: m.fileTextsMap, 
+                    textsCount: m.textsCount
+                };
+            })
         );
         this.closeDropzoneDrawer();
     };
@@ -195,15 +201,12 @@ class _ATFUploader extends React.Component {
         let { ATF_file_maps, edit } = this.state;
         let { activeFileTab, activeTextRow } = this.props.loader;
         let ATFMap = ATF_file_maps[activeFileTab];
-        ATFMap.actions.rewriteAtIndex(
+        Promise.resolve(ATFMap.actions.rewriteAtIndex(
             activeTextRow,
-            edit.data,
+            this.props.editor.JTF.atf,
             this.ATFMappingTracker,
             this.onFileStreamEnd.bind(this, activeFileTab),
-        );
-        this.setState({
-            edit: null,
-        });
+        ));
     };
     
     download = ( blob, name ) => {
@@ -240,18 +243,10 @@ class _ATFUploader extends React.Component {
     downloadCurrent = () => {
         // Downdload active text.
         // Note that editor changes have to be saved in order to apply.
-        let { ATF_file_maps } = this.state;
-        let { activeFileTab, activeTextRow } = this.props.loader;
-        let ATFMap = ATF_file_maps[activeFileTab];
-        let { download } = this;
-/*         Promise.resolve(ATFMap.ATFAtIndex(activeTextRow)).then(
-            rawATFObj => {
-                let {string, PNumber} = rawATFObj;
-                let name = `${PNumber}.atf`;
-                let file = new File([string], name, {type: 'text/plain',});
-                download(file, name);
-            }
-        ); */
+        let { JTF } = this.props.editor;
+        let name = `${JTF.meta.p_number}.atf`;
+        let file = new File([JTF.atf], name, {type: 'text/plain',});
+        this.download(file, name);
     };
     
     handleDropzoneChangeStatus = ({ meta, file }, status) => {
@@ -271,7 +266,6 @@ class _ATFUploader extends React.Component {
     
     onRowsRendered( rowsData ){
         //
-        console.log('rendering rows', rowsData)
         let { activeFileTab, fileDataMap } = this.props.loader;
         let i = rowsData.overscanStartIndex;
         let keys = [];

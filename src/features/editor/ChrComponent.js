@@ -1,9 +1,73 @@
-import React, { Component } from 'react';
+import React, { Component, ReactDOM } from 'react';
+import AutosizeInput from 'react-input-autosize';
+
+import { 
+  FormControl, 
+  FormLabel, 
+  FormControlLabel, 
+  Radio, 
+  RadioGroup} from '@material-ui/core'
+
+
+export class ChrEditPanel extends Component {
+  
+  constructor(props) {
+    super(props);
+    this.state = {};
+  };
+  
+  render(){
+    //
+    return (
+      <div key="" style={{
+          width: '100px', 
+          position: 'absolute', 
+          right: '50px', 
+          border: 'black 1px solid', 
+          padding: '2px'}}
+      >
+        <FormControl component="fieldset">
+          <FormLabel component="legend">labelPlacement</FormLabel>
+          <RadioGroup row aria-label="position" name="position" defaultValue="top">
+            <FormControlLabel
+              value="Cuneiform"
+              control={<Radio color="primary" />}
+              label="Cuneiform"
+              labelPlacement="start"
+              style={{fontSize: '10px',}}
+            />
+            <FormControlLabel
+              value="Proto-Elamite"
+              control={<Radio color="primary" />}
+              label="Proto-Elamite"
+              labelPlacement="start"
+              style={{fontSize: '10px',}}
+            />
+          </RadioGroup>
+        </FormControl>
+        {/*
+          * type: normal, proto-cuneiform, proto-elamite, syl. reference 
+          * normal-type: syl, log, det, num, punct, unclear | unclear reading
+          * damage: complete, partial, none
+          * 
+          * 
+        */}
+      </div>
+    );
+  }
+};
+
 
 export class Chr extends Component {
   
   constructor(props) {
     super(props);
+    this.state = {
+      obj: props.obj,
+      mode: 'view',
+      modified: false,
+    };
+    this.chrValueInput = React.createRef()
   };
   
   makeClassNames( obj=null ){
@@ -74,7 +138,7 @@ export class Chr extends Component {
     //
     let { unit } = obj;
     return (unit)
-      ? this.renderChr(unit, parentObj, i, true )
+      ? this.renderChrView(unit, parentObj, i, true )
       : '' ;
   };
   
@@ -115,9 +179,15 @@ export class Chr extends Component {
       : '' ;
   };
   
-  renderChr( obj=null, parentObj=null, i=null, isUnit=false, GDL=false ){
+  renderChrView( obj=null, parentObj=null, i=null, isUnit=false, GDL=false ){
     //
-    if ( !obj ){ obj = this.props.obj };
+    if ( !obj ){ 
+      if ( this.state.modified ){
+          obj = this.state.obj 
+      } else {
+          obj = this.props.obj 
+      }
+    };
     if ( !parentObj ){ parentObj = this.props.parentObj };
     if ( !i ){ i = this.props.i };
     
@@ -133,7 +203,7 @@ export class Chr extends Component {
       //console.log( 'rendering GDL chr', obj.type, obj );
       val = obj.children.map( 
         c => (c._class==='chr') 
-          ? this.renderChr( c, obj, i, false, true )
+          ? this.renderChrView( c, obj, i, false, true )
           : this.renderOperator( c )
       );
       if ( GDL ){
@@ -166,7 +236,10 @@ export class Chr extends Component {
       ? <span className={tailClasses}>{qst}{xcl}</span> : '';
     
     let chr = ( 
-      <span className={rootClasses}>
+      <span
+       className={rootClasses}
+       onDoubleClick={() => {this.setState({mode: 'edit'})}}
+      >
         <span className={baseClasses}>
           { wrp }
           { core }
@@ -211,8 +284,51 @@ export class Chr extends Component {
     return true;
   };
   
+  renderChrEdit(){
+    //
+    let obj = JSON.parse(JSON.stringify(this.state.obj));
+    let { value, index } = obj;
+    let style = {border: '0'} //minWidth: '10px', 
+    return (
+      <form
+       onDoubleClick={() => {this.setState({mode: 'view'})}}
+       style={{paddingRight: '5px', display: 'inline-block'}}
+       onChange={e => { console.log('chr form changed', e) }}
+       //e.target.getAttribute("size")
+      >
+        <AutosizeInput
+         name="chr-value-input"
+         value={value}
+         ref={this.chrValueInput}
+         spellcheck="false"
+         onChange={e => { 
+            obj.value = e.target.value;
+            this.setState({obj: obj, modified: true})
+         }}
+         inputStyle={{...style, borderBottom: '1px blue solid'}}
+        />
+        <AutosizeInput
+         name="chr-value-input"
+         value={index}
+         spellcheck="false"
+         onChange={e => { 
+            obj.index = e.target.value;
+            this.setState({obj: obj, modified: true})
+         }}
+         inputStyle={{...style, borderBottom: '1px green solid', marginLeft: '-3px'}}
+        />
+      </form>
+    );
+  };
+  
   render(){
     //
-    return this.renderChr(  );
+    let { mode } = this.state;
+    console.log( mode )
+    return (mode==='view') 
+      ? this.renderChrView()
+      : (mode==='edit') 
+      ? this.renderChrEdit() 
+      : 'mode error';
   };
 };

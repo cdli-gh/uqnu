@@ -213,7 +213,7 @@ class _ATFTextEditor extends React.Component {
         // floating action button.
         let {modified, annotations} = this.state;
         let {edit, save2file} = this.props;
-        let disabled = (annotations.length!==0 || !modified || !edit);
+        let disabled = (annotations.length!==0 || (!modified && !edit));
         return (
             <Fab 
                 color="primary"

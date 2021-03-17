@@ -10,7 +10,7 @@ import {
   redo,
 } from './editorSlice';
 
-import { Chr } from './ChrComponent';
+import { Chr, ChrEditPanel } from './ChrComponent';
 
 import styles from './Editor.module.css';
 
@@ -92,48 +92,6 @@ class _JTFEditor extends Component {
     };
   };
   
-  makeClasses( classesArray ){
-    // ClassName string from array of strings.
-    // Adds layout state param from.
-    let { layout } = this.state;
-    return [ ...classesArray, layout ]
-      .map(CN => styles[CN])
-      .join(' ')
-  };
-  
-  renderObject( obj ){
-    //  
-    let rootClasses = this.makeClasses(['object', 'root']);
-    let labelClasses = this.makeClasses(['object', 'label']);
-    let contentClasses = this.makeClasses(['object', 'content']);
-    return( 
-    <div className={rootClasses}>
-      <span className={labelClasses}>
-      { obj.type }
-      </span>
-      <div className={contentClasses}>
-      { this.renderChildren(obj) }
-      </div> 
-    </div>
-    )
-  };
-  
-  renderChildren( obj ){
-    //
-    if ( !obj.children ){
-      return null;
-    }
-    return obj.children.map( (child, i ) => {
-      let classCap = child._class.charAt(0).toUpperCase() + child._class.slice(1)
-      let renderMethod = this[`render${classCap}`];
-      if ( renderMethod ){
-        renderMethod = renderMethod.bind( this );
-        return renderMethod( child, obj, i );
-      } else {
-        console.log( 'missing render method for JTF class:', classCap, child );
-      }
-    });
-  };
   
   collapsableChildren( obj, id, classes ){
     //
@@ -171,6 +129,52 @@ class _JTFEditor extends Component {
       onClick={ toggle }
      />
      );
+  };
+  
+  makeClasses( classesArray ){
+    // ClassName string from array of strings.
+    // Adds layout state param from.
+    let { layout } = this.state;
+    return [ ...classesArray, layout ]
+      .map(CN => styles[CN])
+      .join(' ')
+  };
+  
+  renderObject( obj ){
+    //  
+    let rootClasses = this.makeClasses(['object', 'root']);
+    let labelClasses = this.makeClasses(['object', 'label']);
+    let contentClasses = this.makeClasses(['object', 'content']);
+    return( 
+    <div className={rootClasses}>
+      { this.collapseIcon( obj.id ) }
+      <span className={labelClasses}>
+      { (obj.name) ? `${obj.type} ${obj.name}` : obj.type }
+      </span>
+      { this.collapsableChildren( obj, obj.id, contentClasses ) }
+    </div>
+    )
+  };
+  
+  renderChildren( obj ){
+    //
+    if ( !obj.children ){
+      return null;
+    }
+    return obj.children.map( (child, i ) => {
+      if (!child._class){
+          console.log( 'rendering error: no _class', child )
+          return null
+      }
+      let classCap = child._class.charAt(0).toUpperCase() + child._class.slice(1)
+      let renderMethod = this[`render${classCap}`];
+      if ( renderMethod ){
+        renderMethod = renderMethod.bind( this );
+        return renderMethod( child, obj, i );
+      } else {
+        console.log( 'missing render method for JTF class:', classCap, child );
+      }
+    });
   };
   
   interBreakClasses( obj, parentObj, i){
@@ -220,7 +224,7 @@ class _JTFEditor extends Component {
       { ( last ) ? <div className={TCOClasses}/> : '' }
       { this.collapseIcon( id ) }
       <span className={labelClasses}> 
-      { obj.type }
+      { (obj.name) ? `${obj.type} ${obj.name}` : obj.type }
       </span>
       { this.collapsableChildren( obj, id, contentClasses ) }
     </div>
@@ -270,11 +274,13 @@ class _JTFEditor extends Component {
   renderState( obj, parentObj, i ){
     //
     let rootClasses = this.makeClasses(['state', 'root']);
-    let { extent, scope, state } = obj;
-    let { lacuna } = obj;
+    let { type, value, extent, scope, state, lacuna } = obj;
+    let content = (type==='loose') 
+      ? <>{value}</>
+      : <>{extent} {state} {scope}</>
     return (
       <div className={rootClasses}>
-      { extent} { state } { scope }
+      { content }
       </div>
     )
   }
@@ -369,7 +375,10 @@ class _JTFEditor extends Component {
     }
     return( 
       <div key='JTFEditor' className={this.makeClasses(['JTFEditor'])}>
-      { JTF.objects.map( o => this.renderObject( o ))}
+        {/*<ChrEditPanel/>*/}
+        <div key="JTFEditorBoard">
+          { JTF.objects.map( o => this.renderObject( o ))}
+        </div>
       </div>
     );
   };

@@ -97,7 +97,7 @@ export const stream = (file, callback, callbackEnd) => {
 	
 	splitter.on('end', () => {
 		fileTextsMap.push(file.size);
-		console.log('total:', chunksCounter);
+		//console.log('total:', chunksCounter);
 		let ATFMap = {
 			file: file,
 			fileTextsMap: fileTextsMap,
@@ -110,7 +110,6 @@ export const stream = (file, callback, callbackEnd) => {
 export const ATFActions2Map = function( map ){
 	//
 	let { file, fileTextsMap, textsCount } = map;
-	console.log('making ATF functions for file', file);
 	const getCoordinates = function(i){
 		//
 		return [fileTextsMap[i], fileTextsMap[i+1]]
@@ -119,7 +118,7 @@ export const ATFActions2Map = function( map ){
 	const getTextObject = function(string, index){
 		//
 		let getJTF = C.ATF2JTF.bind(this, string, map.file.name);
-		console.log('! atf2jtf at index', index)
+		//console.log('! atf2jtf at index', index)
 		return {
 			PNumber: string.slice(1, 8),
 			string: string,
@@ -131,7 +130,7 @@ export const ATFActions2Map = function( map ){
 	
 	const ATFAtIndex = (index, callback=null) => {
 		//
-		console.log( 'requesting ATF at index', index )
+		//console.log( 'requesting ATF at index', index )
 		if (index<=textsCount){
 			let [start, end] = getCoordinates(index);
 			return file.slice(start, end).text().then(

@@ -81,7 +81,12 @@ svg.collapsableTreeIcon.collapsed {
 }
 
 .object.root {
-    
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.object.root:not(:first-child) {
+    border-top: #acacac 1px solid;
 }
 
 .object.label {
