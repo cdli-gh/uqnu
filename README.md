@@ -33,6 +33,10 @@ With yarn:
 
 See [React App readme](README_REACT.md).
 
+## Deployed Site
+
+https://cdli-uqnu.netlify.app/
+
 ### About
 By Ilya Khait. Published under the [MIT Licence](https://opensource.org/licenses/MIT).
 
