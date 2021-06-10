@@ -7,8 +7,11 @@ WORKDIR /var/app
 #copy package.json (dependencies)
 COPY ./package.json ./
 
+#set environment variables
+ENV PORT=3002   
+ENV HOST=0.0.0.0   
 # port on which the app would be working
-EXPOSE 3001
+EXPOSE 3002
 
 #add git 
 RUN apk add git
