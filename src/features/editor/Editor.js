@@ -1,3 +1,5 @@
+/* eslint-disable react/jsx-no-target-blank */
+/* eslint-disable no-unused-vars */
 import React, { useState, Component } from 'react';
 import { useSelector, useDispatch, connect, mapDispatchToProp } from 'react-redux';
 import {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React , { useEffect } from 'react';
 import logo from './logo.svg';
 //import { Counter } from './features/counter/Counter';
 
@@ -7,9 +7,16 @@ import { Editor } from './features/editor/Editor';
 import { ATFUploader } from './features/loader/uploader';
 
 import './App.css';
+import { fetchATF } from './services/API';
 
 function App() {
     
+    useEffect(() => {
+
+      const PID = window.location.pathname.split('/').pop();
+      console.log(fetchATF(PID));
+    }, [])
+
     return (
     <div className="App">
     <ATFUploader/>
