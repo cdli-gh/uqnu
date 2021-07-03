@@ -1,76 +1,34 @@
-import React , { useEffect } from 'react';
-import logo from './logo.svg';
-//import { Counter } from './features/counter/Counter';
-
-import { Editor } from './features/editor/Editor';
-
-import { ATFUploader } from './features/loader/uploader';
-
-import './App.css';
-import { fetchATF } from './services/API';
+import React, { useEffect } from "react";
+import { ATFUploader } from "./features/loader/uploader";
+import "./App.css";
+import { fetchATF } from "./services/API";
 
 function App() {
-    
-    useEffect(() => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(async () => {
+    async function getData() {
+      let atf_arr = [];
+      const lastindex = window.location.pathname.split("/").pop();
+      if (lastindex) {
+        const id_arr = lastindex.split("&");
+        for (let index = 0; index < id_arr.length; index++) {
+          const ID = id_arr[index];
+          const atf = await fetchATF(ID);
+          if (atf) {
+            atf_arr.push(atf.data);
+          }
+        }
+        console.log(atf_arr);
+      }
+    }
+    getData();
+  }, []);
 
-      const PID = window.location.pathname.split('/').pop();
-      console.log(fetchATF(PID));
-    }, [])
-
-    return (
+  return (
     <div className="App">
-    <ATFUploader/>
+      <ATFUploader />
     </div>
-    )
-/*   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Editor />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
-    </div>
-  ); */
+  );
 }
 
 export default App;
