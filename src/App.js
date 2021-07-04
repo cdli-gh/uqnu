@@ -7,12 +7,13 @@ function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(async () => {
     async function getData() {
-      let atf_arr = [];
+      let atf_arr = []; // array of atf data
       const lastindex = window.location.pathname.split("/").pop();
       if (lastindex) {
         const id_arr = lastindex.split("&");
         for (let index = 0; index < id_arr.length; index++) {
           const ID = id_arr[index];
+          // API call- Framework
           const atf = await fetchATF(ID);
           if (atf) {
             atf_arr.push(atf.data);
@@ -21,6 +22,7 @@ function App() {
         console.log(atf_arr);
       }
     }
+    // will fetch the ATF data from given ID's in URL
     getData();
   }, []);
 
