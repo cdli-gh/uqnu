@@ -5,7 +5,7 @@ import {stream, ATFActions2Map} from './streamATF';
 import JSZip from 'jszip';
 import LoaderAppBar from './appBar';
 import ScrollableTabsButtonAuto from './fileTabs';
-import {ReactVirtualizedTable as RVT} from './virtualizedTable';
+import { ReactVirtualizedTable as RVT } from './virtualizedTable';
 import Dropzone from 'react-dropzone-uploader';
 import { ILayoutProps as dropzoneLayout } from 'react-dropzone-uploader';
 
@@ -13,14 +13,17 @@ import 'react-dropzone-uploader/dist/styles.css';
 import './App.Loader.css';
 
 import { ATFTextEditor } from './textEditor';
-import {Grid, Drawer, IconButton, Zoom, Paper, Tooltip} from '@material-ui/core';
+import {Grid, Drawer, IconButton, Paper, Tooltip, Zoom} from '@material-ui/core';
 
 import CloseIcon from '@material-ui/icons/Close';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
+
 import ChromeReaderModeOutlinedIcon from '@material-ui/icons/ChromeReaderModeOutlined';
 
 import { Editor } from '../editor/Editor';
 import { connect } from 'react-redux';
+
+import { Panel } from '../editor/editorPanel';
 
 import {
   load,
@@ -85,7 +88,6 @@ class _ATFUploader extends React.Component {
             edit: null,
             dropzoneDrawerOpen: false,
             mode: 'ATF',
-            zoom: '200%',
         };
         localforage.getItem('ATF_file_maps').then( ATF_file_maps => {
             if (ATF_file_maps){
@@ -487,14 +489,15 @@ class _ATFUploader extends React.Component {
                 elevation={0}
                 id='editorPanel'
             >
-            {buttons}
+            { buttons }
+            { <Panel renderTooltip={this.renderTooltip.bind(this)}/> }
             </Paper> 
         );
     };
     
     renderEditor = () => {
         // 
-        let { mode, zoom } = this.state;
+        let { mode } = this.state;
         let editorComponent = (mode==='ATF') 
             ? this.renderATFTextEditor()
             : (mode==='JTF') 
@@ -506,13 +509,7 @@ class _ATFUploader extends React.Component {
                 id='editorContainer'
                 className={mode}
             >
-            <div id='zoom' style={{ 
-                transformOrigin: '0 0',
-                transform: 'scale(500%)',//DOES NOT WORK!
-                }}
-            >
-                {editorComponent}
-            </div>
+            {editorComponent}
             </Paper>
         </Zoom>
       );

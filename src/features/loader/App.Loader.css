@@ -67,6 +67,7 @@ body {
 }
 
 #editorPanel {
+    position: relative;
     height: 50px;
     width: 100%;
     padding-left: 0px;

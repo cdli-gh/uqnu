@@ -8,7 +8,6 @@ import {
   Radio, 
   RadioGroup} from '@material-ui/core'
 
-
 export class ChrEditPanel extends Component {
   
   constructor(props) {
@@ -238,7 +237,7 @@ export class Chr extends Component {
     let chr = ( 
       <span
        className={rootClasses}
-       onDoubleClick={() => {this.setState({mode: 'edit'})}}
+       onClick={() => {this.props.setCursor({ cursor: obj })}}
       >
         <span className={baseClasses}>
           { wrp }
@@ -289,9 +288,13 @@ export class Chr extends Component {
     let obj = JSON.parse(JSON.stringify(this.state.obj));
     let { value, index } = obj;
     let style = {border: '0'} //minWidth: '10px', 
+    //onDoubleClick={() => {this.setState({mode: 'view'})}}
+    //
     return (
       <form
-       onDoubleClick={() => {this.setState({mode: 'view'})}}
+       onDoubleClick={() => {
+           this.props.setCursor({ cursor: null }); 
+       }}
        style={{paddingRight: '5px', display: 'inline-block'}}
        onChange={e => { console.log('chr form changed', e) }}
        //e.target.getAttribute("size")
@@ -308,7 +311,7 @@ export class Chr extends Component {
          inputStyle={{...style, borderBottom: '1px blue solid'}}
         />
         <AutosizeInput
-         name="chr-value-input"
+         name="chr-index-input"
          value={index}
          spellcheck="false"
          onChange={e => { 
@@ -323,12 +326,11 @@ export class Chr extends Component {
   
   render(){
     //
-    let { mode } = this.state;
-    console.log( mode )
-    return (mode==='view') 
+    //let { mode } = this.state;
+    let { atCursor } = this.props;
+    //console.log( mode )
+    return (!atCursor) 
       ? this.renderChrView()
-      : (mode==='edit') 
-      ? this.renderChrEdit() 
-      : 'mode error';
+      : this.renderChrEdit() 
   };
 };

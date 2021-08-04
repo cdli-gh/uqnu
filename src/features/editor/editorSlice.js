@@ -13,6 +13,8 @@ export const editorSlice = createSlice({
     actions: [],
     actionsRedo: [],
     uselessAttr: 'initial useless',
+    cursor: null, // jtf element
+    selected: [], //array of selected jtf elements
   },
   reducers: {
     // Redux Toolkit allows us to write "mutating" logic in reducers. It
@@ -25,6 +27,26 @@ export const editorSlice = createSlice({
       console.log( ' ...loading... ', action.payload )
       state.JTF = action.payload;
       state.actionsRedo = [];
+    },
+    setCursor: (state, action) => {
+    //
+      if (state.cursor && !action.payload.cursor){
+          // update jtf after edit
+          let idsArray = state.cursor.id.split('__')[1].split('_');
+          let obj_id = idsArray.shift();
+          let obj = state.JTF.objects[obj_id]
+          let el = obj;
+          idsArray.forEach( (id, i) => {
+              let parentEl = el;
+              el = parentEl.children[id];
+              if ( idsArray.length===i+1 ){
+                  parentEl.children[id] = state.cursor;
+                  state.JTF.objects[obj_id] = obj;
+              };
+          });
+      };
+      state.cursor = action.payload.cursor;
+      console.log('cursor set to', action);
     },
     activate: (state, action) => {
     //
@@ -79,6 +101,8 @@ export const loadAsync = ObjPromise => dispatch => {
 
 export const { 
   load,
+  setCursor,
+  atCursor,
   activate,
   modify,
   add,

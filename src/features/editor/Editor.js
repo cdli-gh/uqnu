@@ -4,6 +4,7 @@ import React, { useState, Component } from 'react';
 import { useSelector, useDispatch, connect, mapDispatchToProp } from 'react-redux';
 import {
   selectActions,
+  setCursor,
   activate,
   modify,
   add,
@@ -13,14 +14,15 @@ import {
 } from './editorSlice';
 
 import { Chr, ChrEditPanel } from './ChrComponent';
-
 import styles from './Editor.module.css';
 
-import Collapse from '@material-ui/core/Collapse';
-import IconButton from '@material-ui/core/IconButton';
+import {Collapse, IconButton} from '@material-ui/core';
+
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
+
+
 
 export function Editor( ) {
   //
@@ -361,12 +363,25 @@ class _JTFEditor extends Component {
   
   renderChr( obj, parentObj, i ){
     //
+    let { cursor } = this.props;
     return <Chr
-        obj={obj}
+        obj={(cursor && cursor.id===obj.id) ? cursor : obj}
         parentObj={parentObj}
         i={i}
         makeClasses={this.makeClasses.bind(this)}
+        setCursor={this.props.setCursor.bind(this)}
+        atCursor={(cursor && cursor.id===obj.id) ? true : false}
     />
+  };
+  
+  zoom( content ){
+      //
+      return (
+      <div id='zoom' style={{ 
+          transformOrigin: '0 0',
+          transform: 'scale(200%)',
+          }}
+      >{content}</div>)
   };
   
   render( ){
@@ -375,11 +390,12 @@ class _JTFEditor extends Component {
     if (!JTF || !JTF.success){
       return <div>no JTF found :(</div>
     }
-    return( 
+    let content = JTF.objects.map( o => this.renderObject( o ));
+    return(
       <div key='JTFEditor' className={this.makeClasses(['JTFEditor'])}>
         {/*<ChrEditPanel/>*/}
-        <div key="JTFEditorBoard">
-          { JTF.objects.map( o => this.renderObject( o ))}
+        <div id='JTFEditorBoard' key="JTFEditorBoard">
+          { this.zoom( content ) }
         </div>
       </div>
     );
@@ -388,9 +404,21 @@ class _JTFEditor extends Component {
 
 const mapStateToProps = (state) => {
   //console.log( 'redux state:', state )
-  return {JTF: state.editor.JTF};
+  return {
+      JTF: state.editor.JTF,
+      cursor: state.editor.cursor,
+  };
 };
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = {
+  selectActions,
+  setCursor,
+  activate,
+  modify,
+  add,
+  remove,
+  undo,
+  redo,
+};
 
 const JTFEditor = connect(mapStateToProps, mapDispatchToProps)(_JTFEditor)
