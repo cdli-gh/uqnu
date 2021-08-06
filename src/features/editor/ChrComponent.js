@@ -283,14 +283,18 @@ export class Chr extends Component {
     return true;
   };
   
-  renderChrEdit(){
+  renderChrEdit(parentObj=null, i=null, isUnit=false, GDL=false){
     //
+    if ( !parentObj ){ parentObj = this.props.parentObj };
+    if ( !i ){ i = this.props.i };
+    
     let obj = JSON.parse(JSON.stringify(this.state.obj));
     let { value, index } = obj;
     let style = {border: '0'} //minWidth: '10px', 
     //onDoubleClick={() => {this.setState({mode: 'view'})}}
     //
-    return (
+    let sep = this.makeSeparator( obj, parentObj, i, isUnit, GDL );
+    let chrEdit = (
       <form
        onDoubleClick={() => {
            this.props.setCursor({ cursor: null }); 
@@ -322,6 +326,7 @@ export class Chr extends Component {
         />
       </form>
     );
+    return [chrEdit, sep];
   };
   
   render(){

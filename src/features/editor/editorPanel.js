@@ -10,10 +10,19 @@ import {
   remove,
   undo,
   redo,
+  changeZoom,
 } from './editorSlice';
 
 // Editor panel buttons:
-import { Select, FormControl, InputLabel, Popper, Paper, SvgIcon, Divider } from '@material-ui/core';
+import { 
+  Select, 
+  FormControl,
+  InputLabel,
+  Popper,
+  Paper,
+  SvgIcon,
+  Divider,
+  Slider } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 
 import ToggleButton from '@material-ui/lab/ToggleButton';
@@ -246,6 +255,34 @@ class _Panel extends React.Component {
       return [typeButton, typeButtonPopper];
     };
     
+    makeExclamationButton = () => {
+        //
+        let { cursor } = this.props;
+        return this.makeToggleButtonWithTooltip(
+          '!',
+          'sic',
+          'exclamation',
+          event => { (cursor && cursor.exclamation) 
+            ? this.updateCursor({exclamation: false})
+            : this.updateCursor({exclamation: true})
+          }
+        );
+    };
+    
+    makeQuestionButton = () => {
+        //
+        let { cursor } = this.props;
+        return this.makeToggleButtonWithTooltip(
+            '?',
+            'uncertain',
+            'question',
+            event => { (cursor && cursor.question) 
+              ? this.updateCursor({question: false})
+              : this.updateCursor({question: true})
+            }
+        );
+    };
+    
     makeChrButtons = () => {
       //
       let { cursor } = this.props;
@@ -255,24 +292,8 @@ class _Panel extends React.Component {
       let modifierButton = this.makeToggleButtonWithTooltip('mod', 'modifier');
       let variantButton = this.makeToggleButtonWithTooltip('var', 'variant');
       let damageButton = this.makeToggleButtonWithTooltip(<GrainOutlinedIcon/>, 'damage', 'damage');
-      let exclamationButton = this.makeToggleButtonWithTooltip(
-        '!',
-        'sic',
-        'exclamation',
-        event => { (cursor && cursor.exclamation) 
-          ? this.updateCursor({exclamation: false})
-          : this.updateCursor({exclamation: true})
-        }
-      );
-      let questionButton = this.makeToggleButtonWithTooltip(
-        '?',
-        'uncertain',
-        'question',
-        event => { (cursor && cursor.question) 
-          ? this.updateCursor({question: false})
-          : this.updateCursor({question: true})
-        }
-        );
+      let exclamationButton = this.makeExclamationButton();
+      let questionButton = this.makeQuestionButton();
       let omittedButton = this.makeToggleButtonWithTooltip(
         <SvgIcon><Icon icon={circleOutline}/></SvgIcon>, 
         'omitted');
@@ -295,6 +316,27 @@ class _Panel extends React.Component {
         omittedButton,
         superfluousButton,
       ];
+    };
+    
+    makeZoomButton = () => {
+        //
+        let { zoom } = this.props;
+        let zoomButton = this.makeToggleButtonWithTooltip(`${this.props.zoom}%`, 'Zoom', 'zoom');
+        let zoomSlider = (
+          <Slider
+            value={zoom}
+            onChange={(event, newValue) => {this.props.changeZoom({zoom: newValue})}}
+            aria-labelledby="editor-zoom-slider"
+            valueLabelDisplay="auto"
+            style={{width: '100px'}}
+            step={50}
+            marks
+            min={50}
+            max={300}
+          />
+        );
+        let zoomButtonPopper = this.makePopper( zoomSlider, 'zoom' );
+        return [zoomButton, zoomButtonPopper];
     };
     
     renderEditorPanelContent = () => {
@@ -322,6 +364,7 @@ class _Panel extends React.Component {
 /*            languageButton,
               scriptButton,
               genreButton, */
+              ...this.makeZoomButton(),
               descriptionButton,
               DIV,
               ...this.makeChrButtons(),
@@ -338,20 +381,11 @@ class _Panel extends React.Component {
             marginLeft: '50px',
         };
         
-        let formControl = (
-            <>
-            { this.makeToggleButtonGroup(
-              buttonArray, 
-              'horizontal',
-              formControlStyle
-            )}
-            { /*this.makeToggleButtonGroup([
-              
-            ])*/ }
-            </>
+        return this.makeToggleButtonGroup(
+            buttonArray, 
+            'horizontal',
+            formControlStyle
         );
-        let { mode } = this.state;
-        return (mode==='ATF') ? [formControl] : [formControl];
     };
     
     render(){
@@ -365,6 +399,7 @@ const mapStateToProps = (state) => {
   //console.log( 'redux state:', state )
   return {
       cursor: state.editor.cursor,
+      zoom: state.editor.zoom,
   };
 };
 
@@ -377,6 +412,7 @@ const mapDispatchToProps = {
   remove,
   undo,
   redo,
+  changeZoom,
 };
 
 export const Panel = connect(mapStateToProps, mapDispatchToProps)(_Panel)

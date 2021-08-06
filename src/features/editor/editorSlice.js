@@ -15,6 +15,7 @@ export const editorSlice = createSlice({
     uselessAttr: 'initial useless',
     cursor: null, // jtf element
     selected: [], //array of selected jtf elements
+    zoom: 100,
   },
   reducers: {
     // Redux Toolkit allows us to write "mutating" logic in reducers. It
@@ -80,9 +81,13 @@ export const editorSlice = createSlice({
     redo: (state, action) => {
       //state.value += action.payload;
       logReducerData('redo clicked', state, action);
-	  if ( state.actionsRedo.length > 0 ){
+      if ( state.actionsRedo.length > 0 ){
         state.actions.push(state.actionsRedo.pop());
-	  };
+      };
+    },
+    changeZoom: (state, action) => {
+      //
+      state.zoom = action.payload.zoom;
     },
   },
 });
@@ -109,6 +114,7 @@ export const {
   remove,
   undo,
   redo,
+  changeZoom,
   } = editorSlice.actions;
 
 export default editorSlice.reducer;

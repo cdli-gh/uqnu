@@ -93,6 +93,7 @@ class _JTFEditor extends Component {
     this.state = {
       layout: 'vertical',
       collapsed: {},
+      zoom: 100,
     };
   };
   
@@ -379,7 +380,7 @@ class _JTFEditor extends Component {
       return (
       <div id='zoom' style={{ 
           transformOrigin: '0 0',
-          transform: 'scale(200%)',
+          transform: `scale(${this.props.zoom}%)`,
           }}
       >{content}</div>)
   };
@@ -407,6 +408,7 @@ const mapStateToProps = (state) => {
   return {
       JTF: state.editor.JTF,
       cursor: state.editor.cursor,
+      zoom: state.editor.zoom,
   };
 };
 

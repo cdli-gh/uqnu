@@ -88,6 +88,7 @@ class _ATFUploader extends React.Component {
             edit: null,
             dropzoneDrawerOpen: false,
             mode: 'ATF',
+            zoom: 100,
         };
         localforage.getItem('ATF_file_maps').then( ATF_file_maps => {
             if (ATF_file_maps){
@@ -466,8 +467,8 @@ class _ATFUploader extends React.Component {
         return <Tooltip title={title}>{children}</Tooltip>
     };
     
-    renderEditorPanel = () => {
-        // 
+    renderSwitchButton = () => {
+        // Button to switch between editor modes.
         let { mode } = this.state;
         let switchMode = () => {
             this.setState({mode: (mode==='ATF') ? 'JTF' : 'ATF'})
@@ -482,8 +483,12 @@ class _ATFUploader extends React.Component {
                 onClick={switchMode}
                 />;
         let tooltipTitle = (mode==='ATF') ? 'formatted' : 'ATF' ;
-        switchButton = this.renderTooltip(`switch to ${tooltipTitle} view`, switchButton)
-        let buttons = [switchButton]
+        return this.renderTooltip(`switch to ${tooltipTitle} view`, switchButton);
+    };
+    
+    renderEditorPanel = () => {
+        // 
+        let buttons = [this.renderSwitchButton()]
         return (
             <Paper
                 elevation={0}
@@ -491,7 +496,7 @@ class _ATFUploader extends React.Component {
             >
             { buttons }
             { <Panel renderTooltip={this.renderTooltip.bind(this)}/> }
-            </Paper> 
+            </Paper>
         );
     };
     

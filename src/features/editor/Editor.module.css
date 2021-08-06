@@ -287,7 +287,8 @@ svg.collapsableTreeIcon.collapsed {
 
 .chr.value.log {
     color: navy;
-    font-variant: all-small-caps;
+    font-size: 80%;
+    font-weight: 400;
 }
 
 .chr.value.num:not(.unit) {
