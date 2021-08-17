@@ -31,7 +31,7 @@ export const editorSlice = createSlice({
     },
     setCursor: (state, action) => {
     //
-      if (state.cursor && !action.payload.cursor){
+      if (state.cursor && state.cursor.id){
           // update jtf after edit
           let idsArray = state.cursor.id.split('__')[1].split('_');
           let obj_id = idsArray.shift();
@@ -47,7 +47,6 @@ export const editorSlice = createSlice({
           });
       };
       state.cursor = action.payload.cursor;
-      console.log('cursor set to', action);
     },
     activate: (state, action) => {
     //
@@ -92,7 +91,9 @@ export const editorSlice = createSlice({
   },
 });
 
-export const selectActions = state => { console.log(state); return state.editor.actions.join(', ') }//state.element.value;
+export const selectActions = state => { 
+  console.log(state); return state.editor.actions.join(', ');
+}; //state.element.value;
 
 export const loadAsync = ObjPromise => dispatch => {
   //

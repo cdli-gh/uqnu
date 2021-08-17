@@ -1,70 +1,14 @@
 import React, { Component, ReactDOM } from 'react';
-import AutosizeInput from 'react-input-autosize';
-
-import { 
-  FormControl, 
-  FormLabel, 
-  FormControlLabel, 
-  Radio, 
-  RadioGroup} from '@material-ui/core'
-
-export class ChrEditPanel extends Component {
-  
-  constructor(props) {
-    super(props);
-    this.state = {};
-  };
-  
-  render(){
-    //
-    return (
-      <div key="" style={{
-          width: '100px', 
-          position: 'absolute', 
-          right: '50px', 
-          border: 'black 1px solid', 
-          padding: '2px'}}
-      >
-        <FormControl component="fieldset">
-          <FormLabel component="legend">labelPlacement</FormLabel>
-          <RadioGroup row aria-label="position" name="position" defaultValue="top">
-            <FormControlLabel
-              value="Cuneiform"
-              control={<Radio color="primary" />}
-              label="Cuneiform"
-              labelPlacement="start"
-              style={{fontSize: '10px',}}
-            />
-            <FormControlLabel
-              value="Proto-Elamite"
-              control={<Radio color="primary" />}
-              label="Proto-Elamite"
-              labelPlacement="start"
-              style={{fontSize: '10px',}}
-            />
-          </RadioGroup>
-        </FormControl>
-        {/*
-          * type: normal, proto-cuneiform, proto-elamite, syl. reference 
-          * normal-type: syl, log, det, num, punct, unclear | unclear reading
-          * damage: complete, partial, none
-          * 
-          * 
-        */}
-      </div>
-    );
-  }
-};
-
+import AutosizeInput from 'react-input-autosize'; //remove?
+import MultiInput from './multiInput';
 
 export class Chr extends Component {
   
   constructor(props) {
     super(props);
     this.state = {
-      obj: props.obj,
       mode: 'view',
-      modified: false,
+      caret: {},
     };
     this.chrValueInput = React.createRef()
   };
@@ -180,13 +124,7 @@ export class Chr extends Component {
   
   renderChrView( obj=null, parentObj=null, i=null, isUnit=false, GDL=false ){
     //
-    if ( !obj ){ 
-      if ( this.state.modified ){
-          obj = this.state.obj 
-      } else {
-          obj = this.props.obj 
-      }
-    };
+    obj = (obj) ? obj : this.props.obj;
     if ( !parentObj ){ parentObj = this.props.parentObj };
     if ( !i ){ i = this.props.i };
     
@@ -285,48 +223,102 @@ export class Chr extends Component {
   
   renderChrEdit(parentObj=null, i=null, isUnit=false, GDL=false){
     //
+    console.log('rendering edit');
     if ( !parentObj ){ parentObj = this.props.parentObj };
     if ( !i ){ i = this.props.i };
     
-    let obj = JSON.parse(JSON.stringify(this.state.obj));
-    let { value, index } = obj;
-    let style = {border: '0'} //minWidth: '10px', 
-    //onDoubleClick={() => {this.setState({mode: 'view'})}}
-    //
+    let nextSibling = parentObj.children[i+1];
+    let prevSibling = parentObj.children[i-1];
+    //let upSibling
+    //let downSibling
+    
+    let obj = JSON.parse(JSON.stringify(this.props.obj));
+    let classNames = this.makeClassNames( obj );
+    let { value, index, type, question, exclamation } = obj;
     let sep = this.makeSeparator( obj, parentObj, i, isUnit, GDL );
-    let chrEdit = (
-      <form
-       onDoubleClick={() => {
-           this.props.setCursor({ cursor: null }); 
-       }}
-       style={{paddingRight: '5px', display: 'inline-block'}}
-       onChange={e => { console.log('chr form changed', e) }}
-       //e.target.getAttribute("size")
-      >
-        <AutosizeInput
-         name="chr-value-input"
-         value={value}
-         ref={this.chrValueInput}
-         spellcheck="false"
-         onChange={e => { 
-            obj.value = e.target.value;
-            this.setState({obj: obj, modified: true})
-         }}
-         inputStyle={{...style, borderBottom: '1px blue solid'}}
-        />
-        <AutosizeInput
-         name="chr-index-input"
-         value={index}
-         spellcheck="false"
-         onChange={e => { 
-            obj.index = e.target.value;
-            this.setState({obj: obj, modified: true})
-         }}
-         inputStyle={{...style, borderBottom: '1px green solid', marginLeft: '-3px'}}
-        />
-      </form>
-    );
+    let fields = this.makeMultiInputFields(obj);
+    let qst = this.makeQuestion( obj, classNames );
+    let xcl = this.makeExclamation( obj, classNames );
+    let chrEdit = 
+      <MultiInput
+       fields={fields}
+       caret={this.state.caret}
+       onChange={mutation => this.mutateObj(obj, mutation)}
+       close={() => this.props.setCursor({ cursor: null })}
+       right={() => this.props.setCursor({cursor: nextSibling})}
+       left={() => this.props.setCursor({cursor: prevSibling})}
+       up={()=> {}}
+       down={()=> {}}
+       tail={[qst, xcl]}
+     />;
     return [chrEdit, sep];
+  };
+  
+  mutateObj (obj, mutation) {
+    //
+    if (mutation.value){
+      let matches = [...mutation.value.matchAll(/([^\d]+)([\d]+)/g)][0];
+      mutation = (matches && matches.length===3) 
+       ? {value: matches[1], index: matches[2]}
+       : mutation;
+    };
+    this.props.setCursor({cursor: {...obj, ...mutation}});
+  };
+  
+  makeMultiInputFields(obj){
+    //
+    let { value, index, type } = obj;
+    let style = {}; //minWidth: '10px',
+    let valueStyle = (type==='log') 
+      ? {textTransform: 'uppercase', fontSize: '75%', color: 'navy', fontWeight: 400}
+      : ( type==='syl' ) 
+      ? {fontStyle: 'italic', color: '#0e63c1'}
+      : ( type==='det' ) 
+      ? {verticalAlign: 'text-top', color: '#8b007a', verticalAlign: '30%', fontSize: '70%'}
+      : ( type==='pnc' ) 
+      ? {}
+      : {}
+    let damageStyle = (obj.damage)
+      ? {
+          backgroundImage: 'url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/PjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuX28yNVRycSIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgd2lkdGg9IjMuNSIgaGVpZ2h0PSIzLjUiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSgyNSkiPjxsaW5lIHgxPSIwIiB5PSIwIiB4Mj0iMCIgeTI9IjMuNSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPiA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI3BhdHRlcm5fbzI1VHJxKSIgb3BhY2l0eT0iMC4zMSIvPjwvc3ZnPg==)'
+        } : {};
+    style = {...style, ...damageStyle};
+    return (type!=='num') ? [
+      {
+        name: 'value',
+        value: value,
+        style: {...style, borderBottom: '1px blue solid'},
+        inputStyle: valueStyle,
+      },
+      ...(index && index!==1) ? [{
+        name: 'index',
+        value: index,
+        style: {...style, borderBottom: '1px #3f51b5 solid', marginLeft: '-1px'},
+        inputStyle: {color: 'cornflowerblue', fontSize: '70%'},
+      }] : [],
+    ] : [
+      {
+        name: 'value',
+        value: value,
+        style: {...style, borderBottom: '1px #0f9191 solid'},
+        inputStyle: {color: '#0f9191'},
+      },
+      {
+        name: 'unit.value',
+        value: obj.unit.value,
+        style: {...style, borderBottom: '1px blue solid'},
+        inputStyle: {textTransform: 'uppercase', fontSize: '65%'},
+        prefix: '(',
+        postfix: (obj.unit.index && obj.unit.index!==1) ? '' : ')',
+      },
+      ...(obj.unit.index && obj.unit.index!==1) ? [{
+        name: 'unit.index',
+        value: obj.unit.index,
+        style: {...style, borderBottom: '1px #3f51b5 solid', marginLeft: '-1px'},
+        inputStyle: {color: 'cornflowerblue', fontSize: '70%'},
+        postfix: ')',
+      }] : [],
+    ]
   };
   
   render(){

@@ -360,7 +360,7 @@ svg.collapsableTreeIcon.collapsed {
 
 .chr.unit.base .core:not(.GDLObject) *, 
 .chr.unit.base .ext:not(.GDLObject) * {
-    font-size: 80%;
+    font-size: 70%;
     vertical-align: 15%;
     text-transform: uppercase;
 }
