@@ -138,7 +138,7 @@ export default class LoaderAppBar extends React.Component {
 		return [dButton, dMenu]
 	};
 	
-	renderInfoDialog = () => {
+/* 	renderInfoDialog = () => {
 		//
 		return (
 			<Dialog
@@ -176,7 +176,7 @@ export default class LoaderAppBar extends React.Component {
 		);
 		let infoDialog = this.renderInfoDialog();
 		return [infoButton, infoDialog]
-	};
+	}; */
 	
 	render(){
 		let {onAddButtonClick} = this.props;
@@ -184,7 +184,7 @@ export default class LoaderAppBar extends React.Component {
 		let loadMoreButton = this.renderButton(
 			onAddButtonClick, 'add', 3, <AddIcon/>
 		);
-		let infoButton = this.renderInfoBlock();
+		//let infoButton = this.renderInfoBlock();
 		return (
 			<AppBar>
 				<Toolbar>

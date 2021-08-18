@@ -66,6 +66,14 @@ body {
     height: 100%;
 }
 
+.dzu-inputLabel {
+    border-top: black 1px dashed;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 600;
+    color: inherit;
+}
+
 #editorPanel {
     position: relative;
     height: 50px;

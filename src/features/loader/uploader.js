@@ -85,18 +85,20 @@ class _ATFUploader extends React.Component {
         this.tableRef = React.createRef()
         this.state = {
             ATF_file_maps: [],
+            preloaded: false,
             edit: null,
             dropzoneDrawerOpen: false,
             mode: 'ATF',
             zoom: 100,
         };
+        
         localforage.getItem('ATF_file_maps').then( ATF_file_maps => {
             if (ATF_file_maps){
                 this.setState({
                     ATF_file_maps: ATF_file_maps.map( m => ATFActions2Map(m) )
-                })
+                });
             };
-        })
+        });
     };
     
     componentDidUpdate( prevProps ){
@@ -104,6 +106,26 @@ class _ATFUploader extends React.Component {
         if (this.props.loader.loadJTF===true){
             this.updateJTFStore();
         };
+        if (this.props.preloaded && !this.state.preloaded ){
+            this.addFile( this.props.preloaded, 'CDLI-preloaded' );
+            this.setState({ preloaded: true });
+        };
+    };
+    
+    addFile = ( file, name=null ) => {
+        // Add ATF file blob.
+        // stream file to map it
+        // this.onFileStreamEnd fires when done
+        name = (name) 
+            ? name 
+            : (file.name) 
+            ? file.name
+            : 'unnamed';
+        stream(
+            file,
+            this.ATFMappingTracker,
+            this.onFileStreamEnd.bind(this, null, name),
+        );
     };
     
     ATFMappingTracker = ( ChunkObj, linestream ) => {
@@ -124,9 +146,10 @@ class _ATFUploader extends React.Component {
         };
     };
     
-    onFileStreamEnd = ( index, ATFMap ) => {
+    onFileStreamEnd = ( index, name, ATFMap ) => {
         // Fires every time a file mapping is complete
         let { ATF_file_maps } = this.state;
+        ATFMap.name = name;
         if (index!==null){
             ATF_file_maps[index] = ATFMap;
         } else {
@@ -139,7 +162,8 @@ class _ATFUploader extends React.Component {
                 return { 
                     file: m.file, 
                     fileTextsMap: m.fileTextsMap, 
-                    textsCount: m.textsCount
+                    textsCount: m.textsCount,
+                    name: (m.file.name) ? m.file.name : name,
                 };
             })
         );
@@ -208,7 +232,7 @@ class _ATFUploader extends React.Component {
             activeTextRow,
             this.props.editor.JTF.atf,
             this.ATFMappingTracker,
-            this.onFileStreamEnd.bind(this, activeFileTab),
+            this.onFileStreamEnd.bind(this, activeFileTab, null),
         ));
     };
     
@@ -226,7 +250,7 @@ class _ATFUploader extends React.Component {
         let { ATF_file_maps } = this.state;
         let { activeFileTab } = this.props.loader;
         let ATFMap = ATF_file_maps[activeFileTab];
-        this.download(ATFMap.file, ATFMap.file.name);
+        this.download(ATFMap.file, ATFMap.name);
     };
     
     downloadAllFiles = () => {
@@ -235,7 +259,7 @@ class _ATFUploader extends React.Component {
         let {download} = this;
         let zip = new JSZip();
         ATF_file_maps.forEach( ATFMap => {
-            zip.file(`ATFcollection/${ATFMap.file.name}`, ATFMap.file);
+            zip.file(`ATFcollection/${ATFMap.name}`, ATFMap.file);
         });
         zip.generateAsync({type:"blob"})
         .then(function (blob) {
@@ -255,15 +279,7 @@ class _ATFUploader extends React.Component {
     handleDropzoneChangeStatus = ({ meta, file }, status) => {
         // called every time a file's `status` changes.
         if (status==='done'){
-            // stream file to map it
-            // this.onFileStreamEnd fires when done
-            Promise.resolve(file).then((file) => {
-                stream(
-                    file,
-                    this.ATFMappingTracker,
-                    this.onFileStreamEnd.bind(this,null),
-                );
-            });
+            Promise.resolve(file).then(this.addFile);
         };
     };
     
@@ -313,7 +329,7 @@ class _ATFUploader extends React.Component {
         let { ATF_file_maps } = this.state;
         let { activeFileTab, activeTextRow } = this.props.loader;
         let { ATFAtIndex } = ATF_file_maps[activeFileTab].actions;
-        let filename = ATF_file_maps[activeFileTab].file.name;
+        let filename = ATF_file_maps[activeFileTab].name;
         
         const resolveP = ( rawATFobj ) => {
             delete dataPromiseAtIndex[key];
@@ -382,7 +398,7 @@ class _ATFUploader extends React.Component {
         let { ATF_file_maps } = this.state;
         return ATF_file_maps.map( ATFMap => {
             return {
-                label: ATFMap.file.name,
+                label: ATFMap.name,
                 content: (<div>content</div>)
             }
         })
@@ -393,13 +409,31 @@ class _ATFUploader extends React.Component {
         return (
             <Dropzone
                 onChangeStatus = {this.handleDropzoneChangeStatus}
-                accept = ".atf, .txt"
+                accept = ".jtf, .jtfc, .atf, .txt"
                 PreviewComponent = {null}
                 LayoutComponent = {dropzoneLayout}
                 callback = {this.props.parentCallback}
                 output = {this.props.output}
                 maxFiles = {50}
             />
+        );
+    };
+    
+    renderAddCDLI = () => {
+        // Form to add p-numbers and fetch data from CDLI.
+        // Part of DropzoneDrawer.
+        return (
+        <form
+         style={{textAlign: 'center', paddingBottom: '10px', paddingTop: '10px'}}
+        >
+          <span
+           style={{paddingRight: '10px', fontWeight: 600}}
+          >Add CDLI ID(s)</span>
+          <br/>
+          <input
+           style={{border: 0, width: '80%', backgroundColor: 'aliceblue', paddingBlock: '5px'}}
+          />
+        </form>
         );
     };
     
@@ -425,6 +459,7 @@ class _ATFUploader extends React.Component {
                     {closeButton}
                 </Grid>
                 <Grid item xs={12}>
+                    {this.renderAddCDLI()}
                     {this.renderDropzone()}
                 </Grid>
             </Drawer>
