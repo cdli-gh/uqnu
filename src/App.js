@@ -19,7 +19,7 @@ async function getATFData() {
     const pNumbers = lastindex.split("&").filter(p => /[p|P]?\d{6}/.test(p));
     preloadedATF = (ENV==='CDLI') 
       // API call- CDLI Framework
-      ? await Promise.all(pNumbers.map( pNumber => fetchATF(pNumber)))
+      ? await Promise.all(pNumbers.map( pNumber => `${fetchATF(pNumber)}\n`).join('\n'))
       // Otherwise, generic jtf-lib API CDLI import 
       : await axios.post('http://localhost:3003/api/getCDLIATF', {pNumbers: pNumbers})
     preloadedATF = (preloadedATF.data) ? preloadedATF.data : preloadedATF;
@@ -30,13 +30,6 @@ async function getATFData() {
 function makeBlob(string){
   //
   return new Blob([string], {type: 'text/html'});
-/*   var fileURL = URL.createObjectURL(file);
-  // create <a> tag dinamically
-  var fileLink = document.createElement('a');
-  fileLink.href = fileURL;
-  // it forces the name of the downloaded file
-  fileLink.download = 'pdf_name';
-  return fileLink; */
 };
 
 function App () {
