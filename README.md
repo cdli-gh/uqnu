@@ -24,10 +24,10 @@ With yarn:
 `yarn add cdli-gh/uqnu`
 
 Run locally:
-`npm start`
+`npm start` (Windows: `npm start-pc`)
 
 With yarn:
-`yarn start`
+`yarn start` (Windows: `yarn start-pc`)
 
 ## React package documentation
 
